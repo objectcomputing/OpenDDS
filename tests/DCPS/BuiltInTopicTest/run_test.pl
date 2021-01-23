@@ -24,8 +24,9 @@ $test->{add_transport_config} = 0;
 $test->report_unused_flags(1);
 $test->setup_discovery();
 
-my ($rtps_cfg, $rtps_mon) = ($test->{info_repo}->{state} eq 'none') ?
-    ('-DCPSConfigFile rtps_disc.ini', '-t 0') : ('', '');
+#my ($rtps_cfg, $rtps_mon) = ($test->{info_repo}->{state} eq 'none') ?
+#    ('-DCPSConfigFile rtps_disc.ini', '-t 0') : ('', '');
+my ($rtps_cfg, $rtps_mon) = ('-DCPSConfigFile rtps_disc.ini', '-t 0');
 
 $test->process("subscriber", "subscriber", $rtps_cfg);
 $test->process("publisher", "publisher", $rtps_cfg);
@@ -43,6 +44,6 @@ sleep (15);
 
 $test->start_process("monitor2", "-T");
 
-my $status = $test->finish(300, "monitor1");
+my $status = $test->finish(60, "monitor1");
 
 exit $status;
