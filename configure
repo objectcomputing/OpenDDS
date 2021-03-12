@@ -46,90 +46,97 @@ sub perlOS_to_java_platform {
 
 my $targetUsageIndent = "\t\t";
 
-my %platforminfo =
-  ('win32' => {
-               'compilers' => ['cl'],
-               'libpath' => 'PATH',
-               'cl_versions' => {13.1 => 'vc71', 14 => 'vc8', 15 => 'vc9',
-                                 16 => 'vc10', 17 => 'vc11', 18 => 'vc12',
-                                 19 => 'vc14', 19.1 => 'vs2017',
-                                 19.2 => 'vs2019'},
-               'cl_archs' => {'x64' => 1, 'Win32' => 1, 'ARM64' => 0, 'ARM' => 0}, # 1 if supported
-              },
-   'macosx' => {
-                'compilers' => ['clang++'],
-                'libpath' => 'DYLD_LIBRARY_PATH',
-               },
-   'solaris' => {
-                 'compilers' => ['CC', 'g++'],
-                 'libpath' => 'LD_LIBRARY_PATH',
-                 'aceplatform' => 'sunos5_$COMP', # $COMP = sunc++ or g++
-                 'aceconfig' => 'sunos$UNAMER', # $UNAMER = `uname -r`
-                },
-   'linux' => {
-               'compilers' => ['g++', 'clang', 'clang++'],
-               'libpath' => 'LD_LIBRARY_PATH',
-               'aceplatform' => 'linux_$NONSTDCOMP', # $NONSTDCOMP = clang
-              },
-   'linux-cross' => {
-                     'libpath' => 'LD_LIBRARY_PATH',
-                     'aceplatform' => 'linux',
-                     'aceconfig' => 'linux',
-                     'no_host' => 1,
-                     'usage' => ['Use --target-compiler to specify the ' .
-                                 'cross-compiler binary',
-                                ],
-                    },
-   'freebsd' => {
-                    'compilers' => ['clang++'],
-                    'libpath' => 'LD_LIBRARY_PATH',
-                },
-   'lynxos-178' => {
-                    'libpath' => 'LD_LIBRARY_PATH',
-                    'no_host' => 1,
-                    'aceplatform' => 'lynxos',
-                    'compiler_root_env' => 'ENV_PREFIX',
-                    'usage' => ['Set up the cross-compile using '.
-                                'the script from LynxOS',
-                               ],
-                   },
-   'vxworks' => {
-                 'libpath' => 'LD_LIBRARY_PATH',
-                 'no_host' => 1,
-                 'usage' => ['Use the wrenv script before running configure',
-                             'Specify the VSB with --macros=VSB_DIR=<dir>',
-                            ],
-                },
-   'android' => {
-                  'libpath' => 'LD_LIBRARY_PATH',
-                  'aceplatform' => 'android',
-                  'aceconfig' => 'android',
-                  'no_host' => 1,
-                  'usage' => [
-                      "Use --macros=ANDROID_ABI=<ARCH> to specify the",
-                      "target architecture.",
-                      "Defaults to armeabi-v7a which is 32-bit ARMv7.",
-                      "Use --macros=android_sdk=<SDK_PATH> and",
-                      "--macros=android_target_api=<API_NUMBER> to specify",
-                      "where to find android.jar.",
-                      "See docs/android.md for details.",
-                    ],
-                  'needs_i2jrt_corba' => 1,
-                  'java_platform' => 'android',
-                },
-    'ios' => {
-                'compilers' => ['clang++'],
-                'libpath' => 'DYLD_LIBRARY_PATH',
-                'no_host' => 1,
-                'aceconfig' => 'macosx-iOS',
-                'aceplatform' => 'macosx_iOS',
-                'usage' => [
-                    "Use --macros=IPHONE_TARGET=SIMULATOR or",
-                    "--macros=IPHONE_TARGET=HARDWARE",
-                    "to specify the target architecture."
-                  ],
-              }
-  );
+my %platforminfo = (
+  'win32' => {
+    'compilers' => ['cl'],
+    'libpath' => 'PATH',
+    'cl_versions' => {
+      13.1 => 'vc71', 14 => 'vc8', 15 => 'vc9',
+      16 => 'vc10', 17 => 'vc11', 18 => 'vc12',
+      19 => 'vc14', 19.1 => 'vs2017',
+      19.2 => 'vs2019'
+    },
+    'cl_archs' => {'x64' => 1, 'Win32' => 1, 'ARM64' => 0, 'ARM' => 0}, # 1 if supported
+  },
+  'macosx' => {
+    'compilers' => ['clang++'],
+    'libpath' => 'DYLD_LIBRARY_PATH',
+    'auto_run_tests' => {
+      'includes' => ['NO_SHMEM', 'DDS_NO_ORBSVCS'],
+      'platform_config_name' => 'OSX',
+    },
+  },
+  'solaris' => {
+    'compilers' => ['CC', 'g++'],
+    'libpath' => 'LD_LIBRARY_PATH',
+    'aceplatform' => 'sunos5_$COMP', # $COMP = sunc++ or g++
+    'aceconfig' => 'sunos$UNAMER', # $UNAMER = `uname -r`
+  },
+  'linux' => {
+    'compilers' => ['g++', 'clang', 'clang++'],
+    'libpath' => 'LD_LIBRARY_PATH',
+    'aceplatform' => 'linux_$NONSTDCOMP', # $NONSTDCOMP = clang
+  },
+  'linux-cross' => {
+    'libpath' => 'LD_LIBRARY_PATH',
+    'aceplatform' => 'linux',
+    'aceconfig' => 'linux',
+    'no_host' => 1,
+    'usage' => [
+      'Use --target-compiler to specify the cross-compiler binary',
+    ],
+  },
+  'freebsd' => {
+    'compilers' => ['clang++'],
+    'libpath' => 'LD_LIBRARY_PATH',
+  },
+  'lynxos-178' => {
+    'libpath' => 'LD_LIBRARY_PATH',
+    'no_host' => 1,
+    'aceplatform' => 'lynxos',
+    'compiler_root_env' => 'ENV_PREFIX',
+    'usage' => [
+      'Set up the cross-compile using the script from LynxOS',
+    ],
+  },
+  'vxworks' => {
+    'libpath' => 'LD_LIBRARY_PATH',
+    'no_host' => 1,
+    'usage' => [
+      'Use the wrenv script before running configure',
+      'Specify the VSB with --macros=VSB_DIR=<dir>',
+    ],
+  },
+  'android' => {
+    'libpath' => 'LD_LIBRARY_PATH',
+    'aceplatform' => 'android',
+    'aceconfig' => 'android',
+    'no_host' => 1,
+    'usage' => [
+      "Use --macros=ANDROID_ABI=<ARCH> to specify the",
+      "target architecture.",
+      "Defaults to armeabi-v7a which is 32-bit ARMv7.",
+      "Use --macros=android_sdk=<SDK_PATH> and",
+      "--macros=android_target_api=<API_NUMBER> to specify",
+      "where to find android.jar.",
+      "See docs/android.md for details.",
+    ],
+    'needs_i2jrt_corba' => 1,
+    'java_platform' => 'android',
+  },
+  'ios' => {
+    'compilers' => ['clang++'],
+    'libpath' => 'DYLD_LIBRARY_PATH',
+    'no_host' => 1,
+    'aceconfig' => 'macosx-iOS',
+    'aceplatform' => 'macosx_iOS',
+    'usage' => [
+      "Use --macros=IPHONE_TARGET=SIMULATOR or",
+      "--macros=IPHONE_TARGET=HARDWARE",
+      "to specify the target architecture."
+    ],
+  },
+);
 
 sub targetUsage {
   my $status = shift;
@@ -261,9 +268,16 @@ sub iterate {
     for my $n (1 .. (scalar @{$group} / 2)) {
       my $opt = ${$group}[$n * 2 - 1];
       my $descr = ${$group}[$n * 2];
-      $opt =~ /(\<\w+\>)?([\w-]+)/;
-      my $optkey = (defined $1 ? $1 : "") . $2;
-      &$callback(${$group}[0], $opt, $descr, $optkey, @_);
+      $opt =~ s/^(?:\<(\w+)\>)?([\w-]+)(.*)$/$2$3/;
+      my $suffix = defined($3) ? $3 : '';
+      my $keyword = defined($1) ? $1 : '';
+      my $optkey = $2;
+      my $defaulted_string_option = $keyword eq 'default';
+      my $enabled_by_default = ($opt =~ /!$/ && $descr =~ / \(yes\)/) ||
+        $defaulted_string_option;
+      &$callback(${$group}[0], $opt, $descr, $optkey,
+        $enabled_by_default, $defaulted_string_option,
+        @_);
     }
   }
 }
@@ -293,20 +307,19 @@ cases, specify the option as --opt without an = to enable the corresponding
 feature in OpenDDS and use the default installation location.
 EOT
   iterate(sub {
-            my ($group, $opt, $descr, $optkey) = @_;
-            if (!defined $current || $group ne $current) {
-              $current = $group;
-              print "\n$group\n";
-            }
-            $optkey .= '=VAL' if $opt =~ /=s/;
-            $optkey .= '[=VAL]' if $opt =~ /:s/;
-            $optkey = "[no-]$optkey" if ($opt =~ /!$/ && $descr =~ / \(yes\)/);
-            $optkey =~ s/^\<default\>(.*)$/\[no-\]$1/g;
-            $optkey .= '...' if $opt =~ /s\@$/;
-            my $pad = $argPadding - length $optkey;
-            print "--$optkey" . ' ' x (($pad > 0) ? $pad : 0) . " $descr\n";
-          }
-         );
+    my ($group, $opt, $descr, $optkey,
+      $enabled_by_default, $defaulted_string_option) = @_;
+    if (!defined $current || $group ne $current) {
+      $current = $group;
+      print "\n$group\n";
+    }
+    $optkey .= '=VAL' if $opt =~ /=s/;
+    $optkey .= '[=VAL]' if $opt =~ /:s/;
+    $optkey = "[no-]$optkey" if $enabled_by_default;
+    $optkey .= '...' if $opt =~ /s\@$/;
+    my $pad = $argPadding - length $optkey;
+    print "--$optkey" . ' ' x (($pad > 0) ? $pad : 0) . " $descr\n";
+  });
   exit $status;
 }
 
@@ -316,18 +329,14 @@ sub parseArgs {
   my @getopts = ();
   my @default = ();
   iterate(sub {
-            my ($group, $opt, $descr, $optkey) = @_;
-            if ($opt =~ /^<default>(.*)$/) {
-              push @getopts, $1;
-              $optkey =~ /^<default>(.*)$/;
-              push @getopts, "no-$1";
-              push @default, $1;
-            }
-            else  {
-              push @getopts, $opt;
-            }
-          }
-         );
+    my ($group, $opt, $descr, $optkey,
+      $enabled_by_default, $defaulted_string_option) = @_;
+    push @getopts, $opt;
+    if ($defaulted_string_option) {
+      push @default, $optkey;
+      push @getopts, "no-$opt";
+    }
+  });
 
   if (! -r 'rules.dds.GNU') {
     print "ERROR: this script must be run from its own directory\n";
@@ -1043,6 +1052,20 @@ sub write_default_features {
     push(@feat, 'java=1');
   }
 
+  if ($buildEnv{'build'} eq 'target' && $opts{'target'} eq 'android') {
+    # We can't detect C++11 compatibility in cross compilers at the moment,
+    # but all the NDKs we officially support are C++11+ by default, so enable
+    # C++11 features unless the 'no_cxx11' feature already is set.
+    my $no_cxx11_set = 0;
+    for my $feature (@{$opts{'features'}}) {
+      $no_cxx11_set = 1 if ($feature =~ /^no_cxx11/);
+    }
+    if (!$no_cxx11_set) {
+      print("Setting no_cxx11=0 for Android\n") if ($opts{'verbose'});
+      push(@feat, 'no_cxx11=0');
+    }
+  }
+
   if (@feat) {
     my $DF = backup_and_open("$buildEnv{'ACE_ROOT'}/bin/MakeProjectCreator" .
                              "/config/default.features");
@@ -1300,10 +1323,16 @@ sub system_default_install_dir {
 }
 
 my $build_gtest = 0;
-if (exists $opts{'gtest'} || $tests) {
+my $explicit_gtest = exists $opts{'gtest'};
+if ($explicit_gtest || $tests) {
+  if (!$explicit_gtest) {
+    print "--tests implies --gtest\n" if $opts{'verbose'};
+  }
+
   my $gtest_sanity = 'include/gtest/gtest.h';
 
-  if ($opts{'gtest'}) {
+  if ($explicit_gtest) {
+    print "Using explicitly supplied Google Test at $opts{'gtest'}\n" if $opts{'verbose'};
     die "ERROR: '$gtest_sanity' not found in supplied gtest directory '$opts{'gtest'}'"
       if ! -f File::Spec->catfile($opts{'gtest'}, $gtest_sanity);
 
@@ -1317,12 +1346,19 @@ if (exists $opts{'gtest'} || $tests) {
                               $is_windows ? 'googletest-distribution' : ''));
 
     if (-f File::Spec->catfile($sm_src, $gtest_sanity)) {
+      print "Google Test not explicitly supplied, using submodule.\n"
+        if $opts{'verbose'};
+
       # Check for existing build
       $build_gtest = ! -d File::Spec->catdir($sm_dir, 'build/install');
       $opts{'gtest'} = $sm_dir;
       # No need to set env. variable with submodule.
+      # env_from_opt('gtest', 'GTEST_ROOT');
     }
     elsif (-f File::Spec->catfile($sys_dir, $gtest_sanity)) {
+      print "Google Test not explicitly supplied, using system one found at " .
+        "$sys_dir\n" if $opts{'verbose'};
+
       $opts{'gtest'} = $sys_dir;
       env_from_opt('gtest', 'GTEST_ROOT');
     }
@@ -1456,6 +1492,9 @@ sub has_feature {
   return 0;
 }
 
+# Features that will be passed directly to MPC, not written to default.features
+# like --features. This means this should only contain OpenDDS related
+# features.
 my @features;
 if ($opts{'java'}) {
   my $feat = 'java_pre_jpms';
@@ -1844,6 +1883,47 @@ sub disable_feature {
   push(@{$featureArray}, "$feature=0");
 }
 
+sub get_default_features {
+  my $buildEnv = shift;
+
+  my %default_features;
+  my $file = "$buildEnv->{ACE_ROOT}/bin/MakeProjectCreator/config/default.features";
+  if (-e $file) {
+    open(my $fh, '<', $file) or die "ERROR: Could not open $file: $!";
+    while (my $row = <$fh>) {
+      chomp $row;
+      $row =~ s/\/\/.*//;
+      $row =~ s/^\s+//;
+      $row =~ s/\s+$//;
+      next if $row eq '';
+      my ($key, $value) = split(/=/, $row);
+      $default_features{$key} = $value;
+    }
+  }
+  return %default_features;
+}
+
+sub get_requested_features {
+  my %requested_features;
+  for my $f (@features) {
+    my ($key, $value) = split(/=/, $f);
+    $value = "1" unless defined $value;
+    $requested_features{$key} = $value;
+  }
+  return %requested_features;
+}
+
+sub get_features {
+  my $buildEnv = shift;
+
+  my %features = get_default_features($buildEnv);
+  my %requested_features = get_requested_features();
+  for my $key (keys(%requested_features)) {
+    $features{$key} = $requested_features{$key};
+  }
+  return %features;
+}
+
 my $buildtao;
 sub generate_workspace {
   my $buildEnv = shift;
@@ -1876,20 +1956,6 @@ sub generate_workspace {
   }
 
   if ($is_target && $opts{'target'} eq 'android') {
-    # We can't detect C++11 compatibility in cross compilers at the moment,
-    # but all the NDKs we officially support are C++11+ by default, so enable
-    # C++11 features unless an explicit 'no_cxx11' feature already is set.
-    my $set = 1;
-    for my $feature (@{$opts{'features'}}) {
-      if ($feature =~ /no_cxx11/) {
-        $set = 0;
-      }
-    }
-    disable_feature(\@features, 'no_cxx11') if ($set);
-    if ($opts{'verbose'}) {
-      print "Setting no_cxx11=0 for Android: $set\n";
-    }
-
     # Disable including $JAVA_HOME/include on Android. Android NDK includes a
     # jni.h
     disable_feature(\@features, 'jni_include')
@@ -1979,27 +2045,8 @@ EOT
     if (!$buildtao && !defined $opts{'safety-profile'}) {
       # Check for compatibility between the requested features/macros
       # and the pre-built ACE/TAO.
-      my $file = $buildEnv->{'ACE_ROOT'} .
-        '/bin/MakeProjectCreator/config/default.features';
-      my %existing_features;
-      if (-e $file) {
-        open(my $fh, '<', $file) or die "ERROR: Could not open $file: $!";
-        while (my $row = <$fh>) {
-          chomp $row;
-          $row =~ s/\/\/.*//;
-          $row =~ s/^\s+//;
-          $row =~ s/\s+$//;
-          next if $row eq '';
-          my ($key, $value) = split(/=/, $row);
-          $existing_features{$key} = $value;
-        }
-      }
-      my %requested_features;
-      for my $f (@features) {
-        my ($key, $value) = split(/=/, $f);
-        $value = "1" unless defined $value;
-        $requested_features{$key} = $value;
-      }
+      my %existing_features = get_default_features($buildEnv);
+      my %requested_features = get_requested_features();
       for my $f (@ace_features) {
         if (defined $requested_features{$f}) {
           if (!defined $existing_features{$f}) {
@@ -2012,7 +2059,7 @@ EOT
         }
       }
 
-      $file = "$buildEnv->{'ACE_ROOT'}/include/makeinclude/platform_macros.GNU";
+      my $file = "$buildEnv->{'ACE_ROOT'}/include/makeinclude/platform_macros.GNU";
       my %existing_macros;
       if (-e $file) {
         open(my $fh, '<', $file) or die "ERROR: Could not open $file: $!";
@@ -2208,7 +2255,10 @@ sub configure_build {
   generate_workspace($buildEnvRef);
   write_environment($buildEnvRef, $buildEnvRef->{'DDS_ROOT'});
 
-  write_cmake_file($buildEnvRef, $buildEnvRef->{'DDS_ROOT'});
+  if ($buildEnvRef->{'build'} eq 'target') {
+    write_cmake_file($buildEnvRef);
+    generate_configured_tests($buildEnvRef) if $tests;
+  }
 }
 
 sub write_cross_compile_makefile {
@@ -2387,9 +2437,8 @@ if ($is_windows && !$cross_compile) {
 
 sub write_cmake_file {
   my %buildEnv = %{shift()};
-  my $dir = shift;
-  my $module_dir = $dir . '/cmake';
 
+  my $module_dir = "$buildEnv{'DDS_ROOT'}/cmake";
   mkpath($module_dir) unless -d $module_dir;
   my $CM = backup_and_open($module_dir . '/config.cmake');
 
@@ -2483,4 +2532,162 @@ ${\( generate_cmake_options() )}
 FIND_OPENDDS_CMAKE_CONFIG
 
   dump_and_unlink($CM) if $opts{'dry-run'};
+}
+
+# Tries to configure auto_run_tests for running all the configured tests.
+sub generate_configured_tests {
+  my $buildEnv = shift;
+
+  my @files = ();
+  my @includes = (); # -Config
+  my @excludes = (); # -Exclude
+
+  # Takes a hash of auto_run_test info and a boolean of if that info is the
+  # "positive" case or not.
+  # Which keys the hash should use and which value the positive argument takes
+  # depends on if the option or feature is enabled and the relationship of the
+  # option or feature to auto_run_test.pl configurations.
+  my $process_hash = sub {
+    my $hash = shift;
+    my $positive = shift;
+
+    my $process_key = sub {
+      my $key = shift;
+      my $result = shift;
+      my $value = $hash->{$key};
+      if (defined($value)) {
+        push(@{$result}, @{$value});
+      }
+    };
+
+    if ($positive) {
+      $process_key->('files', \@files);
+      $process_key->('includes', \@includes);
+      $process_key->('positive_excludes', \@excludes);
+    }
+    else {
+      $process_key->('excludes', \@excludes);
+      $process_key->('negative_includes', \@includes);
+    }
+  };
+
+  # Check Platform
+  my $platform_hash = $platforminfo{$opts{'target'}};
+  my $platform_config_name = uc($opts{'target'});
+  if (exists($platform_hash->{'auto_run_tests'})) {
+    $process_hash->($platform_hash->{'auto_run_tests'}, 1);
+    if (exists($platform_hash->{'auto_run_tests'}->{'platform_config_name'})) {
+      $platform_config_name = $platform_hash->{'auto_run_tests'}->{'platform_config_name'};
+    }
+  }
+  push(@includes, $platform_config_name);
+
+  # Check Options That Are Relevant to auto_run_tests
+  my %opts_to_check = (
+    'security' => {
+      'files' => ['security'],
+      'includes' => ['OPENDDS_SECURITY'],
+    },
+    'java' => {
+      'files' => ['java'],
+    },
+    'rapidjson' => {
+      'includes' => ['RAPIDJSON'],
+    },
+    'content-filtered-topic' => {
+      'negative_includes' => ['DDS_NO_CONTENT_FILTERED_TOPIC'],
+    },
+    'content-subscription' => {
+      'negative_includes' => ['DDS_NO_CONTENT_SUBSCRIPTION'],
+    },
+    'multi-topic' => {
+      'negative_includes' => ['DDS_NO_MULTI_TOPIC'],
+    },
+    'object-model-profile' => {
+      'negative_includes' => ['DDS_NO_OBJECT_MODEL_PROFILE'],
+    },
+    'ownership-kind-exclusive' => {
+      'negative_includes' => ['DDS_NO_OWNERSHIP_KIND_EXCLUSIVE'],
+    },
+    'ownership-profile' => {
+      'negative_includes' => ['DDS_NO_OWNERSHIP_PROFILE'],
+    },
+    'persistence-profile' => {
+      'negative_includes' => ['DDS_NO_PERSISTENCE_PROFILE'],
+    },
+    'query-condition' => {
+      'negative_includes' => ['DDS_NO_QUERY_CONDITION'],
+    },
+    'safety-profile' => {
+      'includes' => ['OPENDDS_SAFETY_PROFILE'],
+    },
+    'built-in-topics' => {
+      'negative_includes' => ['NO_BUILT_IN_TOPICS'],
+    },
+    'static' => {
+      'includes' => ['STATIC'],
+    },
+  );
+  for my $opt (values(%opts_to_check)) {
+    $opt->{checked} = 0;
+  }
+  iterate(sub {
+    my ($group, $opt, $descr, $optkey,
+      $enabled_by_default, $defaulted_string_option) = @_;
+    if (exists($opts_to_check{$optkey})) {
+      my $enabled = 0;
+      if (exists($opts{$optkey})) {
+        $enabled = $opts{$optkey};
+      }
+      elsif ($defaulted_string_option) {
+        $enabled = exists($defaulted->{$optkey});
+      }
+      elsif ($enabled_by_default) {
+        $enabled = 1;
+      }
+      $process_hash->($opts_to_check{$optkey}, $enabled);
+      $opts_to_check{$optkey}->{'checked'} = 1;
+    }
+  });
+  for my $opt (keys(%opts_to_check)) {
+    die ("\"$opt\" in %opts_to_check isn't valid as it wasn't checked")
+      if (!$opts_to_check{$opt}->{'checked'});
+  }
+
+  # Check Features
+  my %features_to_check = (
+    'uses_wchar' => {
+      'includes' => ['WCHAR'],
+    },
+    'no_cxx11' => {
+      'negative_includes' => ['CXX11'],
+    },
+    'ipv6' => {
+      'includes' => ['IPV6'],
+    },
+    'xerces3' => {
+      'includes' => ['XERCES3'],
+    },
+  );
+  my %features = get_features($buildEnv);
+  for my $feature (keys(%features)) {
+    if (exists($features_to_check{$feature})) {
+      $process_hash->($features_to_check{$feature}, $features{$feature} eq "1");
+    }
+  }
+
+  # Write the File that auto_run_test.pl uses
+  my $fh = backup_and_open("tests${slash}configured_tests.pm");
+  sub to_list {'(' . join(', ', map {"'$_'"} @_) . ')'};
+  my $configured_tests = <<"EOF";
+package configured_tests;
+\@lists = ${\to_list(@files)};
+\@includes = ${\to_list(@includes)};
+\@excludes = ${\to_list(@excludes)};
+1;
+EOF
+  print($configured_tests) if ($opts{'verbose'});
+  print $fh $configured_tests;
+  close($fh);
+  dump_and_unlink($fh) if $opts{'dry-run'};
 }
