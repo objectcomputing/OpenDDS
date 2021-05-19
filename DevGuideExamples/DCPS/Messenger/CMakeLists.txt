@@ -5,8 +5,8 @@ find_package(OpenDDS REQUIRED)
 
 set(opendds_libs
   OpenDDS::Dcps # Core OpenDDS Library
-  OpenDDS::InfoRepoDiscovery OpenDDS::Tcp # For run_test.pl
-  OpenDDS::Rtps OpenDDS::Rtps_Udp # For run_test.pl --rtps
+  OpenDDS::Rtps OpenDDS::Rtps_Udp # For run_test.pl
+  OpenDDS::InfoRepoDiscovery # For run_test.pl --info-repo
 )
 
 # Publisher
