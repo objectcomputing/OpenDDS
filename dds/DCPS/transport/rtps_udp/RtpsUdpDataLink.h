@@ -259,6 +259,45 @@ private:
   typedef OPENDDS_MAP_CMP(RepoId, RemoteInfo, GUID_tKeyLessThan) RemoteInfoMap;
   RemoteInfoMap locators_;
 
+  struct LocatorCacheKey {
+    LocatorCacheKey(const RepoId& remote, const RepoId& local, bool prefer_unicast) : remote_(remote), local_(local), prefer_unicast_(prefer_unicast) {}
+    bool operator<(const LocatorCacheKey& rhs) const {
+      return std::memcmp(this, &rhs, sizeof (LocatorCacheKey)) < 0;
+    }
+
+    const RepoId remote_;
+    const RepoId local_;
+    const bool prefer_unicast_;
+  };
+  typedef OPENDDS_MAP(LocatorCacheKey, AddrSet) LocatorCache;
+  mutable LocatorCache locator_cache_;
+  struct AddressCacheKey {
+    AddressCacheKey(const RepoId& dst_guid, const RepoId& from_guid, const RepoIdSet& to_guids) : dst_guid_(dst_guid), from_guid_(from_guid), to_guids_(to_guids) {}
+    bool operator<(const AddressCacheKey& rhs) const {
+      int r1 = std::memcmp(&dst_guid_, &rhs.dst_guid_, sizeof (RepoId));
+      if (r1 < 0) {
+        return true;
+      }
+      else if (r1 == 0) {
+        int r2 = std::memcmp(&from_guid_, &rhs.from_guid_, sizeof (RepoId));
+        if (r2 < 0) {
+          return true;
+        }
+        else if (r2 == 0) {
+          return to_guids_ < rhs.to_guids_;
+        }
+      }
+      return false;
+    }
+
+    const RepoId dst_guid_;
+    const RepoId from_guid_;
+    const RepoIdSet to_guids_;
+  };
+  typedef OPENDDS_MAP(AddressCacheKey, AddrSet) AddressCache;
+  mutable AddressCache address_cache_;
+  void remove_locator_and_address_cache_i(const RepoId& remote);
+
   void update_last_recv_addr(const RepoId& src, const ACE_INET_Addr& addr);
 
   ACE_SOCK_Dgram unicast_socket_;
