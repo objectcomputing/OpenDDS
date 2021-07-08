@@ -8699,7 +8699,7 @@ jobs:
     runs-on: macos-10.15
 
     needs: build_m10_o1d0_sec
-    timeout-minutes: 150
+    timeout-minutes: 200
 
     steps:
     - name: install xerces-c
@@ -8977,7 +8977,7 @@ jobs:
     runs-on: macos-10.15
 
     needs: build_m10_i0_j_FM-1f
-    timeout-minutes: 150
+    timeout-minutes: 200
 
     steps:
     - name: install xerces-c
