@@ -17,6 +17,9 @@ TypeLookupService::TypeLookupService()
 {
   to_empty_.minimal.kind = TK_NONE;
   to_empty_.complete.kind = TK_NONE;
+
+  type_info_empty_.minimal.typeid_with_size.type_id = TypeIdentifier(TK_NONE);
+  type_info_empty_.complete.typeid_with_size.type_id = TypeIdentifier(TK_NONE);
 }
 
 TypeLookupService::~TypeLookupService()
@@ -131,6 +134,25 @@ void TypeLookupService::update_type_identifier_map(const TypeIdentifierPairSeq& 
     const TypeIdentifierPair& pair = tid_pairs[i];
     complete_to_minimal_ti_map_.insert(std::make_pair(pair.type_identifier1, pair.type_identifier2));
   }
+}
+
+void TypeLookupService::cache_type_info(const DDS::BuiltinTopicKey_t& key,
+                                        const TypeInformation& type_info)
+{
+  ACE_GUARD(ACE_Thread_Mutex, g, mutex_);
+  if (type_info_map_.find(key) == type_info_map_.end()) {
+    type_info_map_.insert(std::make_pair(key, type_info));
+  }
+}
+
+const TypeInformation& TypeLookupService::get_type_info(const DDS::BuiltinTopicKey_t& key) const
+{
+  ACE_GUARD_RETURN(ACE_Thread_Mutex, g, mutex_, type_info_empty_);
+  const TypeInformationMap::const_iterator it = type_info_map_.find(key);
+  if (it != type_info_map_.end()) {
+    return it->second;
+  }
+  return type_info_empty_;
 }
 
 DCPS::String TypeLookupService::equivalence_hash_to_string(const EquivalenceHash& hash) const

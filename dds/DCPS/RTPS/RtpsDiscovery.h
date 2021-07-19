@@ -523,6 +523,17 @@ public:
     use_xtypes_ = use_xtypes;
   }
 
+  bool use_xtypes_complete() const
+  {
+    ACE_GUARD_RETURN(ACE_Thread_Mutex, g, lock_, bool());
+    return use_xtypes_complete_;
+  }
+  void use_xtypes_complete(bool value)
+  {
+    ACE_GUARD(ACE_Thread_Mutex, g, lock_);
+    use_xtypes_complete_ = value;
+  }
+
   DCPS::TimeDuration sedp_heartbeat_period() const
   {
     ACE_GUARD_RETURN(ACE_Thread_Mutex, g, lock_, DCPS::TimeDuration());
@@ -615,6 +626,7 @@ private:
   bool secure_participant_user_data_;
   DCPS::TimeDuration max_type_lookup_service_reply_period_;
   bool use_xtypes_;
+  bool use_xtypes_complete_;
   DCPS::TimeDuration sedp_heartbeat_period_;
   DCPS::TimeDuration sedp_nak_response_delay_;
   DCPS::TimeDuration sedp_send_delay_;
@@ -748,6 +760,9 @@ public:
 
   bool use_xtypes() const { return config_->use_xtypes(); }
   void use_xtypes(bool xt) { config_->use_xtypes(xt); }
+
+  bool use_xtypes_complete() const { return config_->use_xtypes_complete(); }
+  void use_xtypes_complete(bool value) { config_->use_xtypes_complete(value); }
 
   RtpsDiscoveryConfig_rch config() const { return config_; }
 

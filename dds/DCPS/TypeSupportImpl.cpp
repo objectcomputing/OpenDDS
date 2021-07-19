@@ -47,27 +47,38 @@ TypeSupportImpl::get_type_name()
   return type._retn();
 }
 
+void TypeSupportImpl::to_type_info_i(XTypes::TypeIdentifierWithDependencies& ti_with_deps,
+                                     const XTypes::TypeIdentifier& ti,
+                                     const XTypes::TypeMap& type_map) const
+{
+  const XTypes::TypeMap::const_iterator pos = type_map.find(ti);
+
+  if (pos == type_map.end()) {
+    const char* ek = ti.kind() == XTypes::EK_MINIMAL ? "minimal" : "complete";
+    ACE_ERROR((LM_ERROR, ACE_TEXT("(%P|%t) ERROR: TypeSupportImpl::to_type_info_i, ")
+               ACE_TEXT("%C TypeIdentifier of topic type not found in local type map.\n"), ek));
+    ti_with_deps.typeid_with_size.type_id = XTypes::TypeIdentifier();
+    ti_with_deps.typeid_with_size.typeobject_serialized_size = 0;
+  } else {
+    ti_with_deps.typeid_with_size.type_id = ti;
+    const XTypes::TypeObject& to = pos->second;
+    const size_t sz = serialized_size(XTypes::get_typeobject_encoding(), to);
+    ti_with_deps.typeid_with_size.typeobject_serialized_size = static_cast<ACE_CDR::ULong>(sz);
+  }
+  ti_with_deps.dependent_typeid_count = -1;
+}
+
 void TypeSupportImpl::to_type_info(XTypes::TypeInformation& type_info) const
 {
-  using namespace XTypes;
-  const TypeIdentifier& minTypeId = getMinimalTypeIdentifier();
-  const TypeMap& minTypeMap = getMinimalTypeMap();
-  const TypeMap::const_iterator pos = minTypeMap.find(minTypeId);
+  to_type_info_i(type_info.minimal, getMinimalTypeIdentifier(), getMinimalTypeMap());
 
-  if (pos == minTypeMap.end()) {
-    type_info.minimal.typeid_with_size.type_id = TypeIdentifier();
-    type_info.minimal.typeid_with_size.typeobject_serialized_size = 0;
-
+  // Properly populate the complete member if complete TypeObjects are generated.
+  const XTypes::TypeIdentifier& complete_ti = getCompleteTypeIdentifier();
+  if (complete_ti.kind() != XTypes::TK_NONE) {
+    to_type_info_i(type_info.complete, complete_ti, getCompleteTypeMap());
   } else {
-    const TypeObject& minTypeObject = pos->second;
-    type_info.minimal.typeid_with_size.type_id = minTypeId;
-    const size_t sz = serialized_size(get_typeobject_encoding(), minTypeObject);
-    type_info.minimal.typeid_with_size.typeobject_serialized_size = static_cast<unsigned>(sz);
+    type_info.complete = XTypes::TypeIdentifierWithDependencies();
   }
-
-  type_info.minimal.dependent_typeid_count = 0;
-  type_info.complete.typeid_with_size.typeobject_serialized_size = 0;
-  type_info.complete.dependent_typeid_count = 0;
 }
 
 void TypeSupportImpl::populate_dependencies_i(const RcHandle<XTypes::TypeLookupService>& tls,
@@ -91,7 +102,7 @@ void TypeSupportImpl::populate_dependencies_i(const RcHandle<XTypes::TypeLookupS
     XTypes::TypeMap::const_iterator iter = type_map.find(*it);
     if (iter != type_map.end()) {
       const size_t tobj_size = serialized_size(XTypes::get_typeobject_encoding(), iter->second);
-      XTypes::TypeIdentifierWithSize ti_with_size = {*it, static_cast<ACE_CDR::ULong>(tobj_size)};
+      XTypes::TypeIdentifierWithSize ti_with_size(*it, static_cast<ACE_CDR::ULong>(tobj_size));
       deps_with_size.append(ti_with_size);
     } else if (XTypes::has_type_object(*it)) {
       const char* kind = ek == XTypes::EK_MINIMAL ? "minimal" : "complete";
